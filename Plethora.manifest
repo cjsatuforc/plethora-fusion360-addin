@@ -1,0 +1,13 @@
+{
+	"autodeskProduct":	"Fusion360",
+	"type":	"addin",
+	"id":	"1d05c560-59cf-4ba5-81fb-35a6268ea84a",
+	"author":	"Gravitate Designs, LLC",
+	"description":	{
+		"":	"Analyze your parts and get instant quotes using Plethora."
+	},
+	"version":	"1.0.0",
+	"runOnStartup":	true,
+	"supportedOS":	"mac",
+	"editEnabled":	true
+}

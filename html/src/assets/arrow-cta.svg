@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="26px" height="21px" viewBox="0 0 26 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 40.3 (33839) - http://www.bohemiancoding.com/sketch -->
+    <title>arrow-cta</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Icons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Landscape-Icons" transform="translate(-64.000000, -222.000000)" fill="#000000">
+            <g id="Right-Arrow-Bold" transform="translate(64.000000, 222.000000)">
+                <g id="Shape">
+                    <path d="M25.9,10.5 C25.9,11.29529 25.25529,11.94 24.46,11.94 L0.7,11.94 L0.7,9.07 L21.01,9.07 L14.2,2.26 L16.2,0.26 L25.46,9.52 C25.728455,9.77706961 25.8862691,10.1285645 25.9,10.5 L25.9,10.5 Z"></path>
+                    <polygon points="18.74 14.19 14.19 18.74 16.22 20.77 22.8 14.19"></polygon>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
