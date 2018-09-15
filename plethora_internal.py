@@ -190,9 +190,8 @@ def create_order(data):
     
 def analyze(material):
 
-    # get active design
-    product = _app.activeProduct
-    design = adsk.fusion.Design.cast(product)
+    # get design
+    design = adsk.fusion.Design.cast(_app.activeDocument.design)
     
     # check for bodies
     if design.activeComponent.bRepBodies.count == 0:
