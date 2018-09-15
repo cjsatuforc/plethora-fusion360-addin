@@ -63,6 +63,7 @@
           Re-Analyze
           <img src="../assets/arrow-cta.svg" />
         </button>
+        <a href="#" v-on:click="startOver()">Select a different material</a>
       </div>
       <div v-else>
         <h1>FEEDBACK</h1>
@@ -75,6 +76,7 @@
           Re-Analyze
           <img src="../assets/arrow-cta.svg" />
         </button>
+        <a href="#" v-on:click="startOver()">Select a different material</a>
       </div>
     </div>
   </div>
@@ -278,6 +280,11 @@ export default {
     precisionRound: function(number, precision) {
       var factor = Math.pow(10, precision);
       return Math.round(number * factor) / factor;
+    },
+    startOver: function() {
+      this.analyzing = false;
+      this.analysis = null;
+      this.errorMessage = "";
     }
   }
 };
