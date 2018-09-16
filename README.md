@@ -1,19 +1,20 @@
 # Plethora Fusion 360 Add-In
 
-This Add-In allows you to analyze and get instant quotes for your parts using [Plethora](https://www.plethora.com), right inside Autodesk® Fusion 360™.
+This Add-In allows you to analyze and get instant quotes for your parts using [Plethora](https://www.plethora.com), right inside [Autodesk® Fusion 360™](https://www.autodesk.com/products/fusion-360/overview).
 
-_Note: This is an unoffical Plethora Add-In._
+_Note: This is an unofficial Plethora Add-In._
 
-_All product names, trademarks and registered trademarks are property of their respective owners. All company, product and service names used in this website are for identification purposes only. Use of these names, trademarks and brands does not imply endorsement._
+_All product names, trademarks and registered trademarks are property of their respective owners. All company, product and service names used in this website are for identification purposes only._
 
 ## Installation
 
 1. Download the latest version of the Add-In [here](https://github.com/gravitatedesigns/plethora-fusion360-addin/releases/download/1.0.0/plethora-fusion360-addin.zip).
+
 2. Open Fusion 360 and go to the `Add-Ins` toolbar panel and select `Scripts and Add-Ins…` or press `Shift-S`.
 
     ![Add-Ins Toolbar Panel](screenshots/screenshot-1.png)
 
-3. Select the `Add-Ins` tab and press the add button next to `My Add-Ins`.
+3. Select the `Add-Ins` tab and press the plus button next to `My Add-Ins`.
 
     ![Scripts and Add-Ins](screenshots/screenshot-2.png)
 
