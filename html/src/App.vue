@@ -62,6 +62,7 @@ body {
 .container {
   padding-left: 20px;
   padding-right: 20px;
+  padding-bottom: 20px;
 }
 
 h1 {
@@ -75,6 +76,13 @@ h1 {
 p {
   font-weight: 400;
   font-size: 14px;
+}
+
+a {
+  font-weight: 400;
+  font-size: 14px;
+  text-decoration: underline;
+  color: #2f2f2f;
 }
 
 .alert {
@@ -93,7 +101,8 @@ p {
   padding: 0 40px;
   border: none;
   cursor: pointer;
-  margin-top: 20px;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 .plethora-button:hover {
   background-color: #46d678;
