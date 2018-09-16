@@ -25,29 +25,34 @@ def run_internal(context):
         _app = adsk.core.Application.get()
         _ui  = _app.userInterface        
         
-        workspace = _ui.workspaces.itemById('FusionSolidEnvironment')
-        toolbarPanels = workspace.toolbarPanels
-
-        panel = toolbarPanels.itemById('PlethoraPanel')
-        if not panel:
-            panel = toolbarPanels.add('PlethoraPanel', 'Plethora')        
-        
         # Add a command that displays the panel.
         command = _ui.commandDefinitions.itemById('ShowPaletteCommand')
         if not command:
             command = _ui.commandDefinitions.addButtonDefinition('ShowPaletteCommand', 'Plethora', 'Show the Plethora palette', './/resources//plethora')
 
-            # Connect to Command Created event.
-            onCommandCreated = ShowPaletteCommandCreatedHandler()
-            command.commandCreated.add(onCommandCreated)
-            handlers.append(onCommandCreated)
+        # Connect to Command Created event.
+        onCommandCreated = ShowPaletteCommandCreatedHandler()
+        command.commandCreated.add(onCommandCreated)
+        handlers.append(onCommandCreated)        
+        
+        workspaces = [
+            _ui.workspaces.itemById('FusionSolidEnvironment'),
+            _ui.workspaces.itemById('CAMEnvironment')
+        ]            
+        
+        for workspace in workspaces:            
+            toolbarPanels = workspace.toolbarPanels
+
+            panel = toolbarPanels.itemById('PlethoraPanel')
+            if not panel:
+                panel = toolbarPanels.add('PlethoraPanel', 'Plethora')        
             
-        control = panel.controls.itemById('ShowPaletteControl')
-        if not control:
-            control = panel.controls.addCommand(command)
+            control = panel.controls.itemById('ShowPaletteControl')
+            if not control:
+                control = panel.controls.addCommand(command)
             
-        control.isPromotedByDefault = True
-        control.isPromoted = True
+            control.isPromotedByDefault = True
+            control.isPromoted = True
         
         # Register events and handlers for requests.
         customEvent = _app.registerCustomEvent('ThreadCompletedEvent')
@@ -61,14 +66,20 @@ def run_internal(context):
 
 def stop_internal(context):
     try:
-        workspace = _ui.workspaces.itemById('FusionSolidEnvironment')
-        toolbarPanels = workspace.toolbarPanels
-        panel = toolbarPanels.itemById('PlethoraPanel')
-        if panel:
-            panel.deleteMe()
+        workspaces = [
+            _ui.workspaces.itemById('FusionSolidEnvironment'),
+            _ui.workspaces.itemById('CAMEnvironment')
+        ]
+        for workspace in workspaces:            
+            toolbarPanels = workspace.toolbarPanels
+            panel = toolbarPanels.itemById('PlethoraPanel')
+            if panel:
+                panel.deleteMe()
+                
         command = _ui.commandDefinitions.itemById('ShowPaletteCommand')
         if command:
             command.deleteMe()
+                
         palette = _ui.palettes.itemById('PlethoraPalette')
         if palette:
             palette.deleteMe()
