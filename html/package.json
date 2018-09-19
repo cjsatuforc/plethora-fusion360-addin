@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve --open",
-    "build": "vue-cli-service build --dest ../build/debug/plethora/palette",
+    "build": "vue-cli-service build --dest ../palette",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {

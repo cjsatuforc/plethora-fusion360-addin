@@ -40,12 +40,14 @@ The following is required to build the HTML portion of the Add-In:
 Once those are installed there are the following targets that are useful in the `Makefile`:
 
 ```bash
-make build # Builds the entire Add-In and places the artifacts in build/debug.
+make build # Builds the HTML portion of the add-in.
 
 make run-web # Serves the web portion of the add-in for development and debugging.
+
+make package # Packages the add-in into a ZIP and places it in the `output` directory to be uploaded for release.
 ```
 
-To run the Add-In inside of Fusion 360 follow the installation instructions above, but use the `build/debug/plethora` directory instead of downloading the release.
+To run the Add-In inside of Fusion 360 follow the installation instructions above, but use the root directory of the repository instead of downloading the release.
 
 ## Known Issues
 
