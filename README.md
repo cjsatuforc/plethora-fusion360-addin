@@ -8,7 +8,7 @@ _All product names, trademarks and registered trademarks are property of their r
 
 ## Installation
 
-1. Download the latest version of the Add-In [here](https://github.com/gravitatedesigns/plethora-fusion360-addin/releases/download/1.0.1/plethora-fusion360-addin.zip).
+1. Download the latest version of the Add-In [here](https://github.com/gravitatedesigns/plethora-fusion360-addin/releases/download/1.0.2/plethora-fusion360-addin.zip).
 
 2. Open Fusion 360 and go to the `Add-Ins` toolbar panel and select `Scripts and Add-Ins…` or press `Shift-S`.
 

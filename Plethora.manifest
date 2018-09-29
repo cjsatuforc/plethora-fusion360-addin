@@ -6,7 +6,7 @@
 	"description":	{
 		"":	"Analyze your parts and get instant quotes using Plethora."
 	},
-	"version":	"1.0.0",
+	"version":	"1.0.2",
 	"runOnStartup":	true,
 	"supportedOS":	"mac",
 	"editEnabled":	true
