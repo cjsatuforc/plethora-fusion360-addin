@@ -202,7 +202,12 @@ def create_order(data):
 def analyze(material):
 
     # get design
-    design = adsk.fusion.Design.cast(_app.activeDocument.design)
+    design = None
+    for product in _app.activeDocument.products:
+        if isinstance(product, adsk.fusion.Design):
+            design = adsk.fusion.Design.cast(product)
+    if design == None:
+        return None, 'Unable to locate design.'
     
     # check for bodies
     if design.activeComponent.bRepBodies.count == 0:
