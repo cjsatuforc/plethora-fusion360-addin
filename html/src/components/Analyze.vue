@@ -344,7 +344,7 @@ export default {
         return array.concat(
           el["errors"].reduce(function(array, el) {
             if (el["selected"]) {
-              array.push(el["faces"][0]);
+              array = array.concat(el["faces"]);
             }
             return array;
           }, [])
@@ -697,7 +697,7 @@ var mockedAnalysis = {
           "Unable to mill due to part features near the fillet boundary. Please move them at least 0.01in away to make it possible to mill.",
         type: "FilletSweepRadiusTooSmall",
         status: "Error",
-        faces: ["53915905"]
+        faces: ["53915905", "53915906"]
       },
       {
         name: "Obstructed Fillet",
