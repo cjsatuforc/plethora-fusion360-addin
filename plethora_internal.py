@@ -1,7 +1,7 @@
 #Author-Gravitate Designs, LLC
 #Description-
 
-import adsk.core, adsk.fusion, adsk.cam, traceback, requests, os, json, threading, copy, webbrowser
+import adsk.core, adsk.fusion, adsk.cam, traceback, requests, os, json, threading, copy, webbrowser, math
 
 from pathlib import Path
 from .pub_sub_client import PubSubClient
@@ -18,6 +18,7 @@ _part = None
 _analysis = None
 _active_quote_id = None
 _order = None
+_vis_model = None
 
 def run_internal(context):
     try:
@@ -59,7 +60,7 @@ def run_internal(context):
         onThreadEvent = ThreadCompletedEventHandler()
         customEvent.add(onThreadEvent)
         handlers.append(onThreadEvent)
-        
+
     except:
         if _ui:
             _ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
@@ -198,14 +199,19 @@ def create_order(data):
         if json:
             return False, json['error']['message']
         return False, 'failed to create order: ' + request.status_code
+        
+def get_vis_model(url):
+    response = _session.get(url, stream=True)
+    if response.status_code == 200:
+        json_response = json.loads(response.content[10:len(response.content)-2].decode('utf-8'))
+        return json_response, None
+    else:
+        return None, 'failed to get vis model'
     
 def analyze(material):
 
     # get design
-    design = None
-    for product in _app.activeDocument.products:
-        if isinstance(product, adsk.fusion.Design):
-            design = adsk.fusion.Design.cast(product)
+    design = find_design()
     if design == None:
         return None, 'Unable to locate design.'
     
@@ -276,12 +282,12 @@ def analyze(material):
         return None, error
     
     # upload file
-    success, error = upload(uploadURL, options.filename)
+    _, error = upload(uploadURL, options.filename)
     if not error == None:
         return None, error
         
     # acknowledge upload
-    success, error = acknowledgeUpload(_part['id'])
+    _, error = acknowledgeUpload(_part['id'])
     if not error == None:
         return None, error           
 
@@ -312,21 +318,44 @@ def analyze(material):
     # subscribe
     pub_sub_client.subscribe('/parts/' + str(_part['id']) + '/analyses/created')
     pub_sub_client.subscribe('/parts/' + str(_part['id']) + '/analysis-failed')
+    pub_sub_client.subscribe('/parts/' + str(_part['id']) + '/files/pleb_vis_model/created')
     
-    # poll for response
-    json_response = pub_sub_client.poll()
+    global _analysis
+    global _vis_model
+    done = False
+    while not done:
+        # poll for response
+        json_response = pub_sub_client.poll()        
+
+        if json_response['channel'] == '/parts/' + str(_part['id']) + '/analyses/created':        
+            data['analysis'] = json_response['data']['analysis']
+            _analysis = data['analysis']
+            if _vis_model != None:
+                done = True
+        
+        elif json_response['channel'] == '/parts/' + str(_part['id']) + '/analysis-failed':
+            done = True
+            
+        elif json_response['channel'] == '/parts/' + str(_part['id']) + '/files/pleb_vis_model/created':
+            download_url = json_response['data']['download_url']
+            model, error = get_vis_model(download_url)
+            if error != None:
+                return None, error
+            _vis_model = model
+            
+            if _analysis != None:
+                done = True    
+                
+        else:
+            done = True
     
     # disconnect
-    pub_sub_client.disconnect()        
+    pub_sub_client.disconnect()
     
-    if json_response['channel'] == '/parts/' + str(_part['id']) + '/analyses/created':
-        data['analysis'] = json_response['data']['analysis']
-        global _analysis          
-        _analysis = data['analysis']
-        return data, None
-        
-    elif json_response['channel'] == '/parts/' + str(_part['id']) + '/analysis-failed':
+    if _analysis == None:
         return None, 'Analysis failed'
+    else:
+        return data, None
 
 def check_out(setup_cost, part_cost, turnaround_time, quantity):
     global _part
@@ -383,9 +412,75 @@ def reset():
     global _order
     global _part
     global _active_quote_id
+    global _analysis
+    global _vis_model_download_url
     _order = None
     _part = None
     _active_quote_id = None
+    _analysis = None
+    _vis_model_download_url = None
+    
+def select_face(face):
+    if _vis_model == None:
+        return
+
+    # Locate the correct face in the vis model.
+    vertices = None
+    for child in _vis_model['models'][0]['children'][0]['children']:
+        if child['name'] == 'face {}'.format(face):
+            vertices = child['vertices']
+            break
+    if vertices == None:
+        return
+
+    points = []
+    for vertex in vertices:
+        points.append(adsk.core.Point3D.create(vertex[0], vertex[1], vertex[2]))
+    
+    design = find_design()
+    
+    # Create bounding box from list of points.
+    source_box = None
+    for idx, point in enumerate(points, start=1):
+        if idx == 1:
+            source_box = adsk.core.BoundingBox3D.create(points[0], points[1])
+        else:
+            source_box.expand(point)
+
+    # Find all the faces whose bounding boxes contain a single point.    
+    faces = design.activeComponent.bRepBodies[0].faces
+    found_faces = []
+    for face in faces:
+        bounding_box = face.boundingBox
+        for point in points:
+            if bounding_box.contains(point):
+                found_faces.append(face)
+                break
+            
+    # Combine face's bounding box with source box
+    found_face = None
+    for face in found_faces:
+        combined_box = face.boundingBox.copy()
+        combined_box.combine(source_box)
+        volume = bounding_box_volume(face.boundingBox)
+        combined_volume = bounding_box_volume(combined_box)
+        if math.isclose(volume, combined_volume, rel_tol=1e-3):
+            found_face = face
+            break
+                
+    if found_face == None:
+        _ui.messageBox('Failed to locate any faces')
+    else:
+        _ui.activeSelections.add(found_face)
+        
+def find_design():
+    for product in _app.activeDocument.products:
+        if isinstance(product, adsk.fusion.Design):
+            return adsk.fusion.Design.cast(product)
+    return None          
+    
+def bounding_box_volume(box):
+    return abs(box.maxPoint.x - box.minPoint.x) * abs(box.maxPoint.y - box.minPoint.y) * abs(box.maxPoint.z - box.minPoint.z)
             
 # Event handler for the commandCreated event.
 class ShowPaletteCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
@@ -451,6 +546,11 @@ class MyHTMLEventHandler(adsk.core.HTMLEventHandler):
 
                 analyzeThread = AnalyzeThread(htmlArgs.action, data)
                 analyzeThread.start()
+                
+            elif htmlArgs.action == 'selectFaces':
+                _ui.activeSelections.clear()
+                for face in data['faces']:
+                    select_face(face)
 
             elif htmlArgs.action == 'checkout':
                 global _order

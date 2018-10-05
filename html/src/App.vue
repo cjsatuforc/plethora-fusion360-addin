@@ -115,8 +115,57 @@ a {
   height: 11px;
 }
 
-.plethora-issue-name {
-  font-weight: 500;
+.plethora-issue-list-item {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 16px;
+  list-style-image: none;
+  list-style-position: outside;
+  list-style-type: none;
+  padding-left: 20px;
+  padding-right: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.plethora-issue-list-item:hover {
+  background-color: #fff903;
+  cursor: pointer;
+}
+
+.plethora-checkbox {
+  background-color: rgba(0, 0, 0, 0);
+  background-size: 12px;
+  border: none;
+  outline: none;
+  width: 12px;
+  height: 12px;
+}
+.plethora-checkbox-empty {
+  background-image: url("assets/check-empty.png");
+}
+.plethora-checkbox-checked {
+  background-image: url("assets/check-checked.png");
+}
+.plethora-checkbox-mixed {
+  background-image: url("assets/check-mixed.png");
+}
+
+.flex-display {
+  display: flex;
+}
+.flex-center-items {
+  align-items: center;
+}
+.flex-stretch {
+  flex: 1 1 auto;
+}
+.flex-shrink {
+  flex: 0 0 auto;
+}
+
+.strong {
+  font-weight: 600;
 }
 
 .bp-dropdown__btn {

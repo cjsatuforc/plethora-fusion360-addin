@@ -26,6 +26,17 @@
     </div>
     <div v-if="analysis !== null">
       <div v-if="analysisSuccessful">
+        <dropdown v-if="!analyzing" :close-on-click="true">
+          <template slot="btn">{{selectedMaterial !== null ? selectedMaterial.description : ""}}</template>
+          <template slot="body">
+              <div v-on:click="selectMaterial(material)" v-for="material in materials" v-bind:key="material.id">
+                  {{ material.description }}
+              </div>
+          </template>
+          <template slot="icon">
+            <img src="../assets/caret.svg" />
+          </template>
+        </dropdown>
         <h1>SUCCESS!</h1>
         <p>Your part passed - finalize the options below for instant checkout.</p>
         <p>Quantity</p>
@@ -63,20 +74,39 @@
           Re-Analyze
           <img src="../assets/arrow-cta.svg" />
         </button>
-        <a href="#" v-on:click="startOver()">Select a different material</a>
       </div>
       <div v-else>
+        <dropdown v-if="!analyzing" :close-on-click="true">
+          <template slot="btn">{{selectedMaterial !== null ? selectedMaterial.description : ""}}</template>
+          <template slot="body">
+              <div v-on:click="selectMaterial(material)" v-for="material in materials" v-bind:key="material.id">
+                  {{ material.description }}
+              </div>
+          </template>
+          <template slot="icon">
+            <img src="../assets/caret.svg" />
+          </template>
+        </dropdown>
         <h1>FEEDBACK</h1>
         <p>Address these issues to get an instant quote.</p>
-        <div class="plethora-issue" v-for="issue in getIssues()" v-bind:key="issue['faces'][0]">
-          <p class="plethora-issue-name">{{ issue['name'] }}</p>
-          <p class="plethora-issue-description">{{ issue['description'] }}</p>
+        <div v-for="(section, sectionIndex) in issues" v-bind:key="sectionIndex">
+          <p class="strong">{{ section["name"] + " (" + section["errors"].length + ")" }}</p>
+          <p>{{ section["description"]}}</p>
+          <div class="plethora-issue-list-item" v-for="(issue, rowIndex) in section['errors']" v-bind:key="rowIndex" v-on:click="selectIssue(sectionIndex, rowIndex)">
+            <li>
+              <div class="flex-display flex-center-items">
+                <div class="flex-stretch">
+                  <span>{{ issue["name"] }}</span>
+                </div>
+                <button v-bind:class="['plethora-checkbox', 'flex-shrink', {'plethora-checkbox-empty' : !issue['selected']}, {'plethora-checkbox-checked' : issue['selected']}]" v-bind:key="issue['selected']"></button>
+              </div>
+            </li>
+          </div>
         </div>
         <button class="plethora-button" v-if="!analyzing" type="button" v-on:click="analyze()">
           Re-Analyze
           <img src="../assets/arrow-cta.svg" />
         </button>
-        <a href="#" v-on:click="startOver()">Select a different material</a>
       </div>
     </div>
   </div>
@@ -95,6 +125,7 @@ export default {
       analysisSuccessful: false,
       selectedQuantity: 1,
       selectedTurnaround: null,
+      issues: null,
       total: 0.0
     };
   },
@@ -148,7 +179,7 @@ export default {
             data: mockedAnalysis,
             error: null
           });
-        }, 2000);
+        }, 500);
       }
     },
     selectMaterial: function(material) {
@@ -174,12 +205,33 @@ export default {
       );
       if (this.analysisSuccessful) {
         this.updateTotal();
+      } else {
+        this.issues = this.getIssues();
       }
     },
     getIssues() {
-      return this.analysis["analysis"]["results"].filter(el => {
-        return el["status"] === "Error";
+      var errors = this.analysis["analysis"]["results"].filter(el => {
+        return el["status"] === "Error" || el["status"] === "Fatal";
       });
+      var groupedMap = errors.reduce(function(map, el) {
+        el["selected"] = false;
+        if (map[el["type"]] === undefined) {
+          map[el["type"]] = [el];
+        } else {
+          map[el["type"]].push(el);
+        }
+        return map;
+      }, {});
+      var issues = [];
+      for (var type in groupedMap) {
+        issues.push({
+          type: type,
+          name: groupedMap[type][0]["name"],
+          description: groupedMap[type][0]["description"],
+          errors: groupedMap[type]
+        });
+      }
+      return issues;
     },
     turnaroundDateString(turnaround) {
       var year = turnaround["date"][0].toString();
@@ -281,10 +333,30 @@ export default {
       var factor = Math.pow(10, precision);
       return Math.round(number * factor) / factor;
     },
-    startOver: function() {
-      this.analyzing = false;
-      this.analysis = null;
-      this.errorMessage = "";
+    selectIssue: function(sectionIndex, rowIndex) {
+      var section = this.issues[sectionIndex];
+      section["errors"][rowIndex]["selected"] = !section["errors"][rowIndex][
+        "selected"
+      ];
+      this.$set(this.issues, sectionIndex, section);
+
+      var faces = this.issues.reduce(function(array, el) {
+        return array.concat(
+          el["errors"].reduce(function(array, el) {
+            if (el["selected"]) {
+              array.push(el["faces"][0]);
+            }
+            return array;
+          }, [])
+        );
+      }, []);
+      if (typeof adsk !== "undefined") {
+        var args = {
+          faces: faces
+        };
+        // eslint-disable-next-line
+        adsk.fusionSendData("selectFaces", JSON.stringify(args));
+      }
     }
   }
 };
@@ -618,6 +690,22 @@ var mockedAnalysis = {
         type: "StockAvailable",
         status: "Success",
         faces: []
+      },
+      {
+        name: "Obstructed Fillet",
+        description:
+          "Unable to mill due to part features near the fillet boundary. Please move them at least 0.01in away to make it possible to mill.",
+        type: "FilletSweepRadiusTooSmall",
+        status: "Error",
+        faces: ["53915905"]
+      },
+      {
+        name: "Obstructed Fillet",
+        description:
+          "Unable to mill due to part features near the fillet boundary. Please move them at least 0.01in away to make it possible to mill. ",
+        type: "FilletSweepRadiusTooSmall",
+        status: "Error",
+        faces: ["1588967752"]
       }
       // {
       //   name: "Invalid Surface Type",
